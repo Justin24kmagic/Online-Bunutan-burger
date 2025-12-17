@@ -1,12 +1,56 @@
+/* GLOBAL */
 body {
+  margin: 0;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
   text-align: center;
   font-family: sans-serif;
+
+  /* Mobile scaling */
+  font-size: clamp(16px, 4vw, 20px);
+  padding: 1rem;
 }
 
+/* APP WRAPPER */
+.app {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* HIDE */
 .hidden {
   display: none;
 }
 
+/* BURGER */
+#burger {
+  width: min(60vw, 220px);
+  cursor: pointer;
+  margin: 1rem auto;
+}
+
+/* INPUTS & BUTTONS */
+input,
+button {
+  font-size: 1rem;
+  padding: 0.6rem 0.8rem;
+  margin: 0.25rem;
+}
+
+/* HEADINGS */
+h1 {
+  font-size: clamp(1.4rem, 5vw, 2rem);
+}
+
+h2 {
+  font-size: clamp(1.2rem, 4vw, 1.6rem);
+}
+
+/* WIGGLE ANIMATION (UNCHANGED) */
 @keyframes wiggle {
   0% { transform: rotate(0deg); }
   25% { transform: rotate(-5deg); }
@@ -18,6 +62,3 @@ body {
 .wiggle {
   animation: wiggle 0.4s ease;
 }
-
-
-
