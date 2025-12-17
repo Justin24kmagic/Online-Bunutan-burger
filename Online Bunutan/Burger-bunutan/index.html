@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>Burger Bunutan</title>
+
+  <!-- ✅ REQUIRED FOR MOBILE -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
 </head>
@@ -9,30 +13,29 @@
 
 <div class="snow"></div>
 
-<h1>🍔 Burger Bunutan 2025 - Christmas Party 🍔</h1>
+<div class="app">
+  <h1>🍔 Burger Bunutan 2025 - Christmas Party 🍔</h1>
 
-<div id="adminPanel" class="hidden">
-  <input id="nameInput" placeholder="Add name" />
-  <button onclick="addName()">Add</button>
-  <button onclick="resetBunutan()">Reset</button>
+  <div id="adminPanel" class="hidden">
+    <input id="nameInput" placeholder="Add name" />
+    <button onclick="addName()">Add</button>
+    <button onclick="resetBunutan()">Reset</button>
 
-  <h3>Remaining</h3>
-  <ul id="remainingList"></ul>
+    <h3>Remaining</h3>
+    <ul id="remainingList"></ul>
 
-  <h3>Picked</h3>
-  <ul id="pickedList"></ul>
+    <h3>Picked</h3>
+    <ul id="pickedList"></ul>
+  </div>
+
+  <img
+    id="burger"
+    src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png"
+    onclick="drawName()"
+  />
+
+  <h2 id="result">Tap the burger</h2>
 </div>
-
-<img
-  id="burger"
-  src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png"
-  onclick="drawName()"
-  style="width:150px;cursor:pointer"
-/>
-
-
-
-<h2 id="result">Tap the burger</h2>
 
 <script type="module" src="/src/main.js"></script>
 </body>
