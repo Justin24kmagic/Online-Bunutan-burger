@@ -3,7 +3,6 @@
 <head>
   <title>Burger Bunutan</title>
 
-  <!-- ✅ REQUIRED FOR MOBILE -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css" />
@@ -14,7 +13,10 @@
 <div class="snow"></div>
 
 <div class="app">
-  <h1>🍔 Burger Bunutan 2025 - Christmas Party 🍔</h1>
+    <h1>
+    🍔 <span class="highlight">Pamily ith Lab 2025</span><br />
+    Camacho Family Christmas Party!!!
+    </h1>
 
   <div id="adminPanel" class="hidden">
     <input id="nameInput" placeholder="Add name" />
@@ -34,8 +36,33 @@
     onclick="drawName()"
   />
 
-  <h2 id="result">Tap the burger</h2>
+  <h2 id="result">Tap the burger 🍔</h2>
+  
+  <!-- DONE OVERLAY -->
+<div id="doneOverlay" class="hidden overlay">
+  <img src="/Done.jpg" alt="Done" />
 </div>
+
+  <!-- WAIT OVERLAY -->
+  <div id="cooldownOverlay" class="hidden overlay">
+    <img src="/Wait.jpg" alt="Wait" />
+
+    <h2 id="overlayResult"></h2>
+
+    <p>Wait lamang mga kapamilya</p>
+    <h2 id="timerText">15</h2>
+  </div>
+
+
+  <!-- DANCE OVERLAY -->
+  <div id="danceOverlay" class="hidden overlay">
+    <img src="/dance.gif" />
+    <p>You can tap again 🎉</p>
+  </div>
+</div>
+
+
+
 
 <script type="module" src="/src/main.js"></script>
 </body>
