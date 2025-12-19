@@ -8,10 +8,12 @@ import {
 
 const ADMIN_PASSWORD = "burgeradmin";
 let isAdmin = false;
-let isDrawing = false;
 let hasSeenResult = false;
+let cooldownActive = false;
 
 const bunutanRef = ref(db, "bunutan");
+
+/* ---------------- INIT ---------------- */
 
 export function initBunutan() {
   const pass = prompt("Admin password (leave blank if viewer):");
@@ -21,7 +23,6 @@ export function initBunutan() {
     document.getElementById("adminPanel").classList.remove("hidden");
   }
 
-  // 🔒 FORCE INITIAL STRUCTURE
   runTransaction(bunutanRef, data => {
     if (!data) {
       return {
@@ -32,7 +33,6 @@ export function initBunutan() {
       };
     }
 
-    // Self-heal missing fields
     return {
       names: Array.isArray(data.names) ? data.names : [],
       picked: Array.isArray(data.picked) ? data.picked : [],
@@ -42,33 +42,28 @@ export function initBunutan() {
   });
 }
 
-  // 🔄 Realtime listener
+/* ---------------- REALTIME LISTENER ---------------- */
+
 onValue(bunutanRef, snapshot => {
   const data = snapshot.val() || {};
-
   const resultEl = document.getElementById("result");
 
-  // 👀 Hide result unless user participated
   if (hasSeenResult && data.lastResult) {
     resultEl.textContent = data.lastResult;
   } else {
     resultEl.textContent = "Tap the burger 🍔";
   }
 
-  // 🍔 Disable burger during draw (everyone)
   const burger = document.getElementById("burger");
-  if (burger) {
-    burger.style.pointerEvents = data.isDrawing ? "none" : "auto";
-    burger.style.opacity = data.isDrawing ? "0.6" : "1";
-  }
+  burger.style.pointerEvents =
+    data.isDrawing || cooldownActive ? "none" : "auto";
+  burger.style.opacity =
+    data.isDrawing || cooldownActive ? "0.6" : "1";
 
-  // ✅ RENDER LISTS (THIS WAS MISSING)
-  const names = data.names || [];
-  const picked = data.picked || [];
-
-  renderLists(names, picked);
+  renderLists(data.names || [], data.picked || []);
 });
 
+/* ---------------- ADMIN ACTIONS ---------------- */
 
 export function addName() {
   if (!isAdmin) return;
@@ -86,37 +81,39 @@ export function addName() {
   input.value = "";
 }
 
-const burger = document.getElementById("burger");
-burger.classList.add("wiggle");
-setTimeout(() => burger.classList.remove("wiggle"), 400);
+export function resetBunutan() {
+  if (!isAdmin) return;
+  if (!confirm("Reset bunutan?")) return;
 
-
-export function drawName() {
-
-hasSeenResult = true;
-  const burger = document.getElementById("burger");
-
-try {
-  const sound = new Audio("/bite.mp3");
-  sound.play();
-} 
-catch (e) {
-  console.warn("Sound failed:", e);
+  set(bunutanRef, {
+    names: [],
+    picked: [],
+    lastResult: "",
+    isDrawing: false
+  });
 }
 
+export function drawName() {
+  if (cooldownActive) return;
 
-  // 🍔 Wiggle animation
+  hasSeenResult = true;
+
+  const burger = document.getElementById("burger");
+
+  try {
+    new Audio("/bite.mp3").play();
+  } catch {}
+
   burger.classList.add("wiggle");
 
-  // 🔥 Shared draw logic
-  runTransaction(bunutanRef, data => {
-    if (!data) return data;
+  let noNamesLeft = false;
 
-    // 🔒 Prevent double draw across all devices
-    if (data.isDrawing) return data;
+  runTransaction(bunutanRef, data => {
+    if (!data || data.isDrawing) return data;
 
     if (!data.names || data.names.length === 0) {
-      data.lastResult = "🍔 No names left 🍔";
+      data.lastResult = "🍔 Bunutan completed 🍔";
+      noNamesLeft = true;
       return data;
     }
 
@@ -129,29 +126,75 @@ catch (e) {
     data.picked.push(selected);
     data.lastResult = `🍔 ${selected} 🍔`;
 
+    // ✅ SAVE PICKED NAME FOR WAIT OVERLAY
+    window.__lastPickedName = selected;
+
     data.isDrawing = false;
     return data;
   });
 
-  // 🎬 End animation
+  setTimeout(() => burger.classList.remove("wiggle"), 400);
+
+  // ✅ SHOW DONE IMAGE INSTEAD OF COOLDOWN
+  if (noNamesLeft) {
+    showDoneOverlay();
+    return;
+  }
+
+  cooldownActive = true;
+  startCooldown();
+}
+
+
+/* ---------------- COOLDOWN UI ---------------- */
+
+function startCooldown() {
+  const waitOverlay = document.getElementById("cooldownOverlay");
+  const danceOverlay = document.getElementById("danceOverlay");
+  const timerText = document.getElementById("timerText");
+  const overlayResult = document.getElementById("overlayResult");
+
+    // ✅ SHOW PICKED NAME
+  overlayResult.innerHTML = `
+    <div class="picked-label">You have picked</div>
+    <div class="picked-name">${window.__lastPickedName} 🎄</div>
+  `;
+
+  let timeLeft = 15;
+
+  waitOverlay.classList.remove("hidden");
+  timerText.textContent = timeLeft;
+
+  const interval = setInterval(() => {
+    timeLeft--;
+    timerText.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+
+      waitOverlay.classList.add("hidden");
+      danceOverlay.classList.remove("hidden");
+
+      setTimeout(() => {
+        danceOverlay.classList.add("hidden");
+        cooldownActive = false;
+      }, 3000);
+    }
+  }, 1000);
+}
+
+function showDoneOverlay() {
+  const done = document.getElementById("doneOverlay");
+
+  done.classList.remove("hidden");
+
   setTimeout(() => {
-    burger.classList.remove("wiggle");
-  }, 400);
+    done.classList.add("hidden");
+  }, 2000);
 }
 
 
-
-export function resetBunutan() {
-  if (!isAdmin) return;
-  if (!confirm("Reset bunutan?")) return;
-
-    set(bunutanRef, {
-    names: [],
-    picked: [],
-    lastResult: "",
-    isDrawing: false
-    });
-}
+/* ---------------- RENDER LISTS ---------------- */
 
 function renderLists(names, picked) {
   const remainingList = document.getElementById("remainingList");
@@ -174,4 +217,3 @@ function renderLists(names, picked) {
     pickedList.appendChild(li);
   });
 }
-
